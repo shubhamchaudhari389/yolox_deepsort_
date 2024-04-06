@@ -5,15 +5,13 @@ import numpy as np
 import cv2
 from loguru import logger
 import sys
+import os  # Added import for os module
 from yolox.exp.build import get_exp_by_name
 from yolox.data.data_augment import ValTransform
 from yolox.data.datasets import COCO_CLASSES
 from yolox.utils import postprocess, vis
-# from yolox.utils.visualize import vis_track
-
 
 class_names = COCO_CLASSES
-
 
 class Predictor():
     def __init__(self, model='yolox-s', ckpt='yolox_s.pth', visual=True):
@@ -27,7 +25,6 @@ class Predictor():
         checkpoint = torch.load(ckpt, map_location="cpu")
         self.model.load_state_dict(checkpoint["model"])
         self.preproc = ValTransform(legacy=False)
-
 
     def inference(self, img, visual=True, conf=0.5, logger_=True):
         img_info = {"id": 0}
@@ -69,26 +66,25 @@ class Predictor():
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
         return outputs, img_info
     
-    
-
 if __name__=='__main__':
     model='yolox-s'
     ckpt='weights/yolox_s.pth'
+    path_to_video_file = r'F:\Skill_Devlopment_2023\TIME_TABLES_2023\NOTES\Year-2024\_New_folder_\05Traffic_Monitoring_DAshboard_Using_Computer_Vision\Day 4\YoloXDeepsortDemo\detector.py (1)\video.mp4'
     detector = Predictor(model, ckpt)
 
-    cap = cv2.VideoCapture(sys.argv[1]) 
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
+    cap = cv2.VideoCapture(path_to_video_file) 
+    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     fps = cap.get(cv2.CAP_PROP_FPS)
     property_id = int(cv2.CAP_PROP_FRAME_COUNT) 
     length = int(cv2.VideoCapture.get(cap, property_id))
 
     vid_writer = cv2.VideoWriter(
-        f'demo_{sys.argv[1]}', cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
-    ) # open one video
+        f'demo_{path_to_video_file}', cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
+    )
     
     while True:
-        ret_val, frame = cap.read() # read frame from video
+        ret_val, frame = cap.read() 
         if ret_val:
             try:
                 _,info = detector.inference(frame, visual=True)
@@ -105,4 +101,3 @@ if __name__=='__main__':
     cap.release()
     vid_writer.release()
     cv2.destroyAllWindows()
-
